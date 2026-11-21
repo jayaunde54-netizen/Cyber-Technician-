@@ -33,25 +33,30 @@ jobs:
         with:
           gradle-version: '8.13'
 
-      - name: Find Android Project
-      - name: Verify Android Gradle Config
-        run: |
-          echo "=== Extracted project files ==="
-          find extracted -name build.gradle -o -name build.gradle.kts
-          echo "=== NDK configuration ==="
-          grep -n -A 8 -B 5 "abiFilters" extracted/app/build.gradle
+      - name: Extract Android Project
         run: |
           unzip -o CT-Android-Project.zip -d extracted
-          find extracted \( -name settings.gradle -o -name settings.gradle.kts \)
-          find extracted -name gradlew
 
-      - name: Build APK
+      - name: Find Android Project
         run: |
-          PROJECT_DIR=$(find extracted \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit | xargs dirname)
+          PROJECT_DIR=$(find extracted \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit | xargs -r dirname)
           if [ -z "$PROJECT_DIR" ]; then
             echo "Android project not found"
             exit 1
           fi
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+      - name: Verify Android Gradle Config
+        run: |
+          echo "Checking: $PROJECT_DIR/app/build.gradle"
+          if [ ! -f "$PROJECT_DIR/app/build.gradle" ]; then
+            echo "app/build.gradle not found"
+            exit 1
+          fi
+          grep -n -A 8 -B 5 "abiFilters" "$PROJECT_DIR/app/build.gradle" || true
+
+      - name: Build APK
+        run: |
           cd "$PROJECT_DIR"
           gradle :app:assembleDebug --no-daemon
 
