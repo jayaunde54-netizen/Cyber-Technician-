@@ -33,7 +33,12 @@ jobs:
         with:
           gradle-version: '8.13'
 
-      - name: Find Android Project
+      - name: Find Android Project      - name: Verify Android Gradle Config
+        run: |
+          echo "=== Extracted project files ==="
+          find extracted -name build.gradle -o -name build.gradle.kts
+          echo "=== NDK configuration ==="
+          grep -n -A 8 -B 5 "abiFilters" extracted/app/build.gradle
         run: |
           unzip -o CT-Android-Project.zip -d extracted
           find extracted \( -name settings.gradle -o -name settings.gradle.kts \)
