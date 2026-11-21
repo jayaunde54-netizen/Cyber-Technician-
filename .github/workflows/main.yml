@@ -35,7 +35,7 @@ jobs:
 
       - name: Extract Android Project
         run: |
-          unzip unzip -o CT-Android-Project-Android-Services-Added.zip -d extracted
+          unzip -o CT-Android-Project-Android-Services-Added.zip -d extracted
 
       - name: Find Android Project
         run: |
