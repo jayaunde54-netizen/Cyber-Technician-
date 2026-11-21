@@ -35,7 +35,7 @@ jobs:
 
       - name: Find Android Project
         run: |
-          unzip -o Cyber-Technician-Android-Project.zip -d extracted
+          unzip -o CT-Android-Project.zip -d extracted
           find extracted \( -name settings.gradle -o -name settings.gradle.kts \)
           find extracted -name gradlew
 
