@@ -46,14 +46,37 @@ jobs:
           fi
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Verify Android Gradle Config
+      
+      - name: Fix Chaquopy NDK Configuration
         run: |
-          echo "Checking: $PROJECT_DIR/app/build.gradle"
-          if [ ! -f "$PROJECT_DIR/app/build.gradle" ]; then
-            echo "app/build.gradle not found"
-            exit 1
-          fi
-          grep -n -A 8 -B 5 "abiFilters" "$PROJECT_DIR/app/build.gradle" || true
+          python3 - "$PROJECT_DIR/app/build.gradle" <<'PY'
+          import sys
+          from pathlib import Path
+
+          p = Path(sys.argv[1])
+          s = p.read_text()
+
+          if "abiFilters" not in s:
+              marker = "defaultConfig {"
+              if marker not in s:
+                  raise SystemExit("defaultConfig block not found")
+
+              s = s.replace(
+                  marker,
+                  marker + "\n        ndk {\n            abiFilters 'arm64-v8a'\n        }",
+                  1
+              )
+              p.write_text(s)
+
+          print(p.read_text())
+          PY
+
+      - name: Build APK
+        run: |
+          cd "$PROJECT_DIR"
+          gradle :app:assembleDebug --no-daemon
+
+          echo 
 
       - name: Build APK
         run: |
